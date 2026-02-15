@@ -1,0 +1,270 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url = env("DATABASE_URL")
+}
+
+//
+// ATHLETE PROFILE 
+//
+
+model Athlete {
+    id String @id @default(cuid())
+    firstName String 
+    lastName String
+    nickName String?
+    dateOfBirth DateTime?
+    gender Gender
+    nationality String?
+    belt BeltRank
+    weightClass WeightClass?
+
+    // GI and NO GI separation
+    giEloRating Float @default(1500.0)
+    giPeakElo Float @default(1500.0)
+    giMatches Int @default(0)
+
+    noGiEloRating Float @default(1500.0)
+    noGiPeakElo Float @default(1500.0)
+    noGiMatches Int @default(0)
+
+    totalWins Int @default(0)
+    totalLosses Int @default(0)
+
+    // Profile 
+    bio String?
+    profileImage String?
+    created DateTime @default(now())
+    updated DateTime @updatedAt
+
+    // Affiliations
+    gym Gym? @relation(fields: [gymId], references: [id])
+    gymId String?
+
+    matchesAsFirst Match[] @relation("Athlete1Matches")
+    matchesAsSecond Match[] @relation("Athlete2Matches")
+    eloHistory EloHistory[]
+
+    @@index([giEloRating])
+    @@index([noGiEloRating])
+    @@index([belt])
+    @@index([weightClass])
+    @@map("athletes")
+}
+
+//
+// GYMS / AFFILIATIONS 
+//
+
+model Gym {
+    id String @id @default(cuid())
+    name String
+    country String?
+    city String?
+    affiliation String?
+    website String?
+    created DateTime @default(now())
+    updated DateTime @updatedAt
+ 
+    athletes Athlete[]
+
+    @@map("gym_affiliations")
+}
+
+//
+// COMPETITIONS
+//
+
+model Competition{
+    id String @id @default(cuid())
+    tier CompetitionType @default(LOCAL)
+    name String
+    organiser String? 
+    location String?
+    country String?
+
+    startDate DateTime
+    endDate DateTime?
+
+    ruleset Ruleset @default(GI)
+    status CompetitionStatus @default(UPCOMING)
+
+    description String?
+    website String?
+    frontImage String?
+
+    matches Match[]
+
+    @@index([startDate])
+    @@index([status])
+    @@index([ruleset])
+    @@map("competitions")
+
+}
+
+//
+// MATCHES 
+//
+
+model Match {
+    id String @id @default(cuid())
+
+    competition Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+    competitionId String
+
+    division String?
+    round String?
+    matchNumber Int?
+
+    athlete1 Athlete @relation("Athlete1Matches", fields: [athlete1Id], references: [id])
+    athlete1Id String 
+
+    athlete2 Athlete @relation("Athlete2Matches", fields: [athlete2Id], references: [id])
+    athlete2Id String
+
+    winner Winner?
+    wayOfWin wayOfWin?
+    submissionType String?
+
+    finalScore1 Int?
+    finalScore2 Int?
+    advantages1 Int?
+    advantages2 Int?
+    penalties1 Int?
+    penalties2 Int?
+
+    duration Int?
+    matchDate DateTime?
+    videoUrl String?
+
+    affectsRatingGi Boolean @default(true)
+    affectsRatingNoGi Boolean @default(false)
+
+    eloChange1 Float?
+    eloChange2 Float?
+
+    expectedScore1 Float?
+    expectedScore2 Float?
+    kFactor Float?
+
+    created DateTime @default(now())
+    updated DateTime @updatedAt
+
+    @@index([competitionId])
+    @@index([athlete1Id])
+    @@index([athlete2Id])
+    @@index([matchDate])
+    @@map("matches")
+}
+
+//
+// ELO HISTORY
+//
+
+model EloHistory{
+    id String @id @default(cuid())
+
+    athlete Athlete @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+    athleteId String
+
+    ratingType Ruleset // nogi or gi
+    oldRating Float
+    newRating Float
+    change Float
+
+    reason String
+    timestamp DateTime @default(now())
+
+    @@index([athleteId])
+    @@index([timestamp])
+    @@index([ratingType])
+    @@map("elo_history")
+}
+
+//
+// ENUMS
+//
+
+enum Ruleset {
+  GI
+  NOGI
+  BOTH
+}
+
+enum Gender{
+    MALE
+    FEMALE
+    OTHER
+}
+
+enum BeltRank{
+    WHITE
+    BLUE
+    PURPLE
+    BROWN
+    BLACK
+}
+
+enum WeightClass {
+  // Male
+  ROOSTER        // -57.5kg
+  LIGHT_FEATHER  // -64kg
+  FEATHER        // -70kg
+  LIGHT          // -76kg
+  MIDDLE         // -82.3kg
+  MEDIUM_HEAVY   // -88.3kg
+  HEAVY          // -94.3kg
+  SUPER_HEAVY    // -100.5kg
+  ULTRA_HEAVY    // +100.5kg
+  
+  // Female
+  F_ROOSTER      // -48.5kg
+  F_LIGHT_FEATHER // -53.5kg
+  F_FEATHER      // -58.5kg
+  F_LIGHT        // -64kg
+  F_MIDDLE       // -69kg
+  F_MEDIUM_HEAVY // -74kg
+  F_HEAVY        // +74kg
+
+  ADCC_66
+  ADCC_77
+  ADCC_88
+  ADCC_99
+  ADCC_PLUS_99
+  
+  OPEN_CLASS     // No weight limit
+}
+
+enum CompetitionType{
+    WORLDS // IBJJF worlds, ADCC worlds (K highest here)
+    INTERNATIONAL // international opens (pans)
+    NATIONAL // National championships
+    REGIONALS // normal opens per Regionals
+    LOCAL // local tourneys (lowest k here)
+}
+
+enum CompetitionStatus{
+    UPCOMING
+    IN_PROGRESS
+    COMPLETED
+    CANCELLED
+}
+
+enum Winner {
+    ATHLETE1 
+    ATHLETE2 
+    DRAW
+}
+
+enum wayOfWin {
+    SUBMISSION 
+    POINTS 
+    ADVANTAGES 
+    REF_DECISION 
+    DISQUALIFICATION
+    NO_SHOW
+    DRAW
+}
