@@ -48,6 +48,7 @@ model Athlete {
     matchesAsSecond Match[] @relation("Athlete2Matches")
     eloHistory EloHistory[]
 
+    @@unique([firstName, lastName])
     @@index([giEloRating])
     @@index([noGiEloRating])
     @@index([belt])
@@ -98,6 +99,7 @@ model Competition{
 
     matches Match[]
 
+    @@unique([name])
     @@index([startDate])
     @@index([status])
     @@index([ruleset])

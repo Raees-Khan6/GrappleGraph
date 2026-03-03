@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import {NextResponse} from "next/server";
+import {PrismaClient} from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -21,7 +21,7 @@ export async function GET(request: Request) {
 
         return NextResponse.json(athletes);
     } catch (error) {
-        return NextResponse.json({ error: 'Failed to get athletes' }, { status: 500 });
+        return NextResponse.json({error: 'Failed to get athletes'}, {status: 500});
     }
 }
 
@@ -42,6 +42,6 @@ export async function POST(request: Request){
 
         return NextResponse.json(athlete);
     } catch (error) {
-        return NextResponse.json({ error: 'Failed athlete creation' }, { status: 500 });
+        return NextResponse.json({error: 'Failed athlete creation'}, { status: 500 });
     }
 }
