@@ -16,7 +16,7 @@ export async function POST(request: Request){
         const lines = text.split('\n').filter(line => line.trim())
         const dataLines = lines.slice(1);
         let created = 0;
-        let errors = [];
+        let errors: string[] = [];
 
         for(let i = 0; i < dataLines.length; i++){
             try{
@@ -25,17 +25,18 @@ export async function POST(request: Request){
                 const values = line.split(',').map(v => v.trim());
 
                 const [firstName1, lastName1, firstName2, lastName2, winner, competitionName, matchDate, ruleset] = values;
+                const isNogi = ruleset.toUpperCase() === 'NOGI'; 
 
                 const athlete1 = await prisma.athlete.upsert({
                     where:{ firstName_lastName: {firstName: firstName1, lastName: lastName1}},
                     update: {},
-                    create: {firstName: firstName1, lastName: lastName1, gender: 'MALE', belt: 'BLACK',}
+                    create: {firstName: firstName1, lastName: lastName1, gender: 'MALE', belt: 'BLACK', giEloRating: isNogi ? 0 : 1500, noGiEloRating: isNogi ? 1500 : 0}
                 });
 
                 const athlete2 = await prisma.athlete.upsert({
                     where:{ firstName_lastName: {firstName: firstName2, lastName: lastName2}},
                     update: {},
-                    create: {firstName: firstName2, lastName: lastName2, gender: 'MALE', belt: 'BLACK',}
+                    create: {firstName: firstName2, lastName: lastName2, gender: 'MALE', belt: 'BLACK', giEloRating: isNogi ? 0 : 1500, noGiEloRating: isNogi ? 1500 : 0}
                 });
 
                 const competition = await prisma.competition.upsert({
