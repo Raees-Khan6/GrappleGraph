@@ -15,7 +15,6 @@ export async function GET(request: Request) {
             orderBy: {
                 [order]: 'desc'
             },
-            take: 10
         });
 
 
