@@ -18,7 +18,7 @@ export async function GET(request: Request) {
         });
 
 
-        return NextResponse.json(athletes);
+        return NextResponse.json({athletes});
     } catch (error) {
         return NextResponse.json({error: 'Failed to get athletes'}, {status: 500});
     }
