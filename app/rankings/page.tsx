@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import {useEffect, useState} from 'react';
+import Navbar from '../components/navbar';
 
 interface Athlete {
   id: string;
@@ -63,6 +64,8 @@ export default function RankingsPage() {
   }
 
   return (
+    <>
+    <Navbar />
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-6xl mx-auto">
         <div className="mb-8">
@@ -222,5 +225,6 @@ export default function RankingsPage() {
         </div>
       </div>
     </div>
+    </>
   );
 }
